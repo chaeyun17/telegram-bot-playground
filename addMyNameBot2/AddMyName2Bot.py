@@ -1,7 +1,9 @@
 import logging
+import sys
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
+
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -42,7 +44,7 @@ def start(update, message):
     return INPUT
 
 def input(update, message):
-    print("[START Chat] chat_id: " + str(update.message.chat.id))
+    logger.info("[START Chat] chat_id: %s", str(update.message.chat.id))
     myData = MyData(update.message.chat.id, update)
     myData.eventMsg = update.message.text
 
@@ -52,7 +54,7 @@ def input(update, message):
 
 def button(update, message):
     query = update.callback_query
-    print("[Activity]: chat_id: "+ str(query.message.chat.id))
+    logger.info("[Activity] chat_id: %s", str(query.message.chat.id))
     username = getFullUserName(update)
 
     mydata = getMyData(query.message.chat.id)
@@ -100,14 +102,13 @@ def error(update, context):
 
 def help(update, message):
     helpStr = """행사 참석자 여부를 조사하는 봇입니다. 버튼을 통해 참석 여부를 조사하며, 실시간 메시지로 진행 상황을 확인할 수 있습니다.
-    `/start`: 메시지를 통해 행사 내용을 등록할 수 있습니다. 참석자 조사 메시지가 뜹니다.
-    `/end`: 참석자 조사를 마칩니다. 결과 메시지가 나타납니다.
-    `/help`: 도움말. 이 설명을 다시 볼 수 있습니다.
-    """
+/start: 메시지를 통해 행사 내용을 등록할 수 있습니다. 참석자 조사 메시지가 뜹니다.
+/end: 참석자 조사를 마칩니다. 결과 메시지가 나타납니다.
+/help: 도움말. 이 설명을 다시 볼 수 있습니다."""
     update.message.reply_text(text=helpStr)
 
 def main():
-    updater = Updater("token", use_context=True)
+    updater = Updater(sys.argv[1], use_context=True)
     dp = updater.dispatcher
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
@@ -126,7 +127,7 @@ def main():
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_error_handler(error)
-    dp.add_handler('help', help)
+    dp.add_handler(CommandHandler('help', help))
 
     updater.start_polling()
     updater.idle()
