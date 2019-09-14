@@ -77,7 +77,14 @@ def getMyData(chat_id):
 
 def getFullUserName(update):
     fromUser = update.callback_query.from_user
-    return fromUser.last_name + fromUser.first_name
+    if fromUser.last_name == None and fromUser.first_name == None:
+        return fromUser.username
+    elif fromUser.last_name == None:
+        return fromUser.first_name
+    elif fromUser.first_name == None:
+        return fromUser.last_name
+    else:
+        return fromUser.last_name + fromUser.first_name
 
 def getText(mydata):
     attendtext = "\n참여: " + ", ".join(mydata.attendee)
